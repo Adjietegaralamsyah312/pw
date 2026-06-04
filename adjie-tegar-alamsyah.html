@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistem Manajemen Pengguna - IndexedDB CRUD</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --surface: rgba(255, 255, 255, 0.08);
+      --surface-2: rgba(255, 255, 255, 0.12);
+      --card: rgba(15, 23, 42, 0.88);
+      --card-border: rgba(148, 163, 184, 0.18);
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --line: rgba(148, 163, 184, 0.18);
+      --primary: #60a5fa;
+      --primary-strong: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger: #f87171;
+      --danger-hover: #ef4444;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.30), transparent 35%),
+        radial-gradient(circle at top right, rgba(14, 165, 233, 0.20), transparent 28%),
+        linear-gradient(180deg, #0b1120 0%, #0f172a 55%, #111827 100%);
+      padding: 28px;
+    }
+
+    .app {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 760px;
+      line-height: 1.6;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(96, 165, 250, 0.14);
+      border: 1px solid rgba(96, 165, 250, 0.20);
+      color: #dbeafe;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1.45fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      body { padding: 18px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.92), rgba(15, 23, 42, 0.92));
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+    }
+
+    .card-header {
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+    }
+
+    .card-subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .card-body { padding: 18px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 560px) {
+      .stats { grid-template-columns: 1fr; }
+    }
+
+    .stat {
+      padding: 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    .stat strong {
+      font-size: 1.45rem;
+      letter-spacing: -0.03em;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .input, .select, .textarea {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      outline: none;
+      transition: 0.2s ease;
+      font-size: 0.98rem;
+    }
+
+    .input::placeholder, .textarea::placeholder { color: #94a3b8; }
+    .input:focus, .select:focus, .textarea:focus {
+      border-color: rgba(96, 165, 250, 0.65);
+      box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.12);
+    }
+
+    .search {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s ease;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 46px;
+    }
+
+    .btn-primary { background: linear-gradient(135deg, var(--primary-strong), var(--primary)); }
+    .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.03); }
+    .btn-danger { background: linear-gradient(135deg, #dc2626, var(--danger)); }
+    .btn-danger:hover { transform: translateY(-1px); }
+    .btn-secondary { background: rgba(148, 163, 184, 0.18); color: var(--text); border: 1px solid var(--line); }
+    .btn-secondary:hover { background: rgba(148, 163, 184, 0.24); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(96, 165, 250, 0.35); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.92rem;
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+
+    .hint {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .toggle-pass {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 0;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: rgba(15, 23, 42, 0.98);
+      color: #dbeafe;
+      text-align: left;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.92rem;
+    }
+
+    tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      color: #e2e8f0;
+      vertical-align: middle;
+    }
+
+    tbody tr {
+      transition: 0.15s ease;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    tbody tr:hover { background: rgba(255, 255, 255, 0.04); }
+    tbody tr.selected { background: rgba(96, 165, 250, 0.12); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .badge.active {
+      background: rgba(52, 211, 153, 0.14);
+      color: #6ee7b7;
+      border: 1px solid rgba(52, 211, 153, 0.20);
+    }
+
+    .badge.inactive {
+      background: rgba(251, 191, 36, 0.14);
+      color: #fcd34d;
+      border: 1px solid rgba(251, 191, 36, 0.20);
+    }
+
+    .empty {
+      padding: 36px 18px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .toast-wrap {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      display: grid;
+      gap: 10px;
+      z-index: 99;
+    }
+
+    .toast {
+      min-width: 260px;
+      max-width: min(92vw, 380px);
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      animation: slideIn 0.2s ease;
+    }
+
+    .toast strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .toast.success { border-color: rgba(52, 211, 153, 0.35); }
+    .toast.error { border-color: rgba(248, 113, 113, 0.35); }
+    .toast.info { border-color: rgba(96, 165, 250, 0.35); }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-mode {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="hero">
+      <div>
+        <h1>Manajemen Database Pengguna</h1>
+        <p>CRUD modern berbasis <strong>IndexedDB</strong> dengan form dinamis, pencarian cepat, tampilan tabel yang lebih rapi, dan alur edit/hapus yang lebih nyaman.</p>
+      </div>
+      <div class="pill">● Offline • Responsive • Dynamic Schema</div>
+    </div>
+
+    <div class="grid">
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title" id="form-title">Tambah Pengguna</h2>
+            <p class="card-subtitle" id="form-subtitle">Isi data di bawah untuk menambahkan pengguna baru.</p>
+          </div>
+          <button type="button" class="btn btn-ghost" id="btn-clear-selection">Bersihkan Pilihan</button>
+        </div>
+        <div class="card-body">
+          <div class="stats">
+            <div class="stat">
+              <span>Total Data</span>
+              <strong id="stat-total">0</strong>
+            </div>
+            <div class="stat">
+              <span>Aktif</span>
+              <strong id="stat-active">0</strong>
+            </div>
+            <div class="stat">
+              <span>Nonaktif</span>
+              <strong id="stat-inactive">0</strong>
+            </div>
+          </div>
+
+          <form id="dynamic-form" autocomplete="off">
+            <div id="form-fields" class="form-grid"></div>
+            <div class="form-mode" id="form-mode">Mode: Tambah</div>
+            <div class="btn-row">
+              <button type="submit" class="btn btn-primary" id="btn-save">Simpan Data</button>
+              <button type="button" class="btn btn-danger" id="btn-delete" style="display:none;">Hapus Data</button>
+              <button type="button" class="btn btn-secondary" id="btn-reset">Reset Form</button>
+            </div>
+          </form>
+
+          <div class="footer-note">
+            Catatan: saat mode edit, jika kata sandi dikosongkan maka nilai lama akan dipertahankan.
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Daftar Pengguna</h2>
+            <p class="card-subtitle">Klik baris tabel untuk mengisi form secara otomatis.</p>
+          </div>
+        </div>
+        <div class="card-body" style="padding-bottom: 0;">
+          <div class="toolbar">
+            <input type="text" id="search-input" class="input search" placeholder="Cari ID, nama, atau status..." />
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="dynamic-table">
+            <thead>
+              <tr id="table-header"></tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toast-wrap"></div>
+
+  <script>
+    const SchemaConfig = [
+      { name: 'id', label: 'ID Pengguna', type: 'text', isKey: true, visible: true, placeholder: 'Contoh: USR001' },
+      { name: 'nama', label: 'Nama Lengkap', type: 'text', isKey: false, visible: true, placeholder: 'Masukkan nama lengkap' },
+      { name: 'sandi', label: 'Kata Sandi', type: 'password', isKey: false, visible: false, placeholder: 'Masukkan kata sandi' },
+      { name: 'status', label: 'Status', type: 'select', options: ['Aktif', 'Nonaktif'], isKey: false, visible: true }
+    ];
+
+    class IndexedDBManager {
+      constructor(dbName, storeName) {
+        this.dbName = dbName;
+        this.storeName = storeName;
+        this.db = null;
+      }
+
+      init() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(this.dbName, 1);
+
+          request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            const keyField = SchemaConfig.find(f => f.isKey).name;
+            if (!db.objectStoreNames.contains(this.storeName)) {
+              db.createObjectStore(this.storeName, { keyPath: keyField });
+            }
+          };
+
+          request.onsuccess = (e) => {
+            this.db = e.target.result;
+            resolve();
+          };
+
+          request.onerror = (e) => reject(e.target.error);
+        });
+      }
+
+      executeTx(mode, callback) {
+        const tx = this.db.transaction(this.storeName, mode);
+        const store = tx.objectStore(this.storeName);
+        return callback(store);
+      }
+
+      getAll() {
+        return new Promise((resolve, reject) => {
+          this.executeTx('readonly', (store) => {
+            const request = store.getAll();
+            request.onsuccess = () => resolve(request.result || []);
+            request.onerror = () => reject(request.error);
+          });
+        });
+      }
+
+      getByKey(key) {
+        return new Promise((resolve, reject) => {
+          this.executeTx('readonly', (store) => {
+            const request = store.get(key);
+            request.onsuccess = () => resolve(request.result || null);
+            request.onerror = () => reject(request.error);
+          });
+        });
+      }
+
+      save(data) {
+        return new Promise((resolve, reject) => {
+          this.executeTx('readwrite', (store) => {
+            const request = store.put(data);
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+          });
+        });
+      }
+
+      delete(key) {
+        return new Promise((resolve, reject) => {
+          this.executeTx('readwrite', (store) => {
+            const request = store.delete(key);
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+          });
+        });
+      }
+    }
+
+    class AppController {
+      constructor(schema, dbManager) {
+        this.schema = schema;
+        this.db = dbManager;
+        this.keyField = schema.find(f => f.isKey).name;
+        this.isEditMode = false;
+        this.currentKey = null;
+        this.currentData = null;
+        this.allData = [];
+        this.searchTerm = '';
+
+        this.formFieldsContainer = document.getElementById('form-fields');
+        this.tableHeader = document.getElementById('table-header');
+        this.tableBody = document.getElementById('table-body');
+        this.form = document.getElementById('dynamic-form');
+        this.btnDelete = document.getElementById('btn-delete');
+        this.btnReset = document.getElementById('btn-reset');
+        this.btnClearSelection = document.getElementById('btn-clear-selection');
+        this.searchInput = document.getElementById('search-input');
+        this.toastWrap = document.getElementById('toast-wrap');
+        this.statTotal = document.getElementById('stat-total');
+        this.statActive = document.getElementById('stat-active');
+        this.statInactive = document.getElementById('stat-inactive');
+        this.formTitle = document.getElementById('form-title');
+        this.formSubtitle = document.getElementById('form-subtitle');
+        this.formMode = document.getElementById('form-mode');
+      }
+
+      async start() {
+        await this.db.init();
+        this.renderFormFields();
+        this.renderTableHeader();
+        this.initEvents();
+        await this.refreshTable();
+      }
+
+      renderFormFields() {
+        let html = '';
+        this.schema.forEach(field => {
+          html += `<div class="form-group">`;
+          html += `<label for="field-${field.name}">${field.label}</label>`;
+
+          if (field.type === 'select') {
+            html += `<select id="field-${field.name}" name="${field.name}" class="select" required>`;
+            field.options.forEach(opt => {
+              html += `<option value="${opt}">${opt}</option>`;
+            });
+            html += `</select>`;
+          } else if (field.type === 'password') {
+            html += `<div class="input-wrap">`;
+            html += `<input type="password" id="field-${field.name}" name="${field.name}" class="input" placeholder="${field.placeholder || ''}" autocomplete="new-password">`;
+            html += `<button type="button" class="toggle-pass" data-toggle="field-${field.name}">Lihat</button>`;
+            html += `</div>`;
+          } else {
+            html += `<input type="${field.type}" id="field-${field.name}" name="${field.name}" class="input" placeholder="${field.placeholder || ''}" required>`;
+          }
+
+          html += `</div>`;
+        });
+        this.formFieldsContainer.innerHTML = html;
+
+        this.formFieldsContainer.querySelectorAll('.toggle-pass').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const inputId = btn.dataset.toggle;
+            const input = document.getElementById(inputId);
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            btn.textContent = isHidden ? 'Sembunyi' : 'Lihat';
+          });
+        });
+      }
+
+      renderTableHeader() {
+        const visibleFields = this.schema.filter(f => f.visible);
+        this.tableHeader.innerHTML = [
+          ...visibleFields.map(f => `<th>${f.label}</th>`),
+          '<th>Aksi</th>'
+        ].join('');
+      }
+
+      async refreshTable() {
+        this.allData = await this.db.getAll();
+        const filtered = this.getFilteredData();
+        const visibleFields = this.schema.filter(f => f.visible);
+
+        this.updateStats(this.allData);
+
+        if (filtered.length === 0) {
+          this.tableBody.innerHTML = `
+            <tr>
+              <td colspan="${visibleFields.length + 1}">
+                <div class="empty">Tidak ada data yang cocok dengan pencarian.</div>
+              </td>
+            </tr>`;
+          return;
+        }
+
+        this.tableBody.innerHTML = filtered.map(data => {
+          const rowCells = visibleFields.map(field => {
+            if (field.name === 'status') {
+              const val = data[field.name] || '';
+              const cls = val === 'Aktif' ? 'active' : 'inactive';
+              return `<td><span class="badge ${cls}">${val}</span></td>`;
+            }
+            return `<td>${this.escapeHtml(data[field.name] ?? '')}</td>`;
+          }).join('');
+
+          return `
+            <tr data-id="${this.escapeHtml(data[this.keyField])}">
+              ${rowCells}
+              <td>
+                <button type="button" class="btn btn-ghost" data-action="edit" data-id="${this.escapeHtml(data[this.keyField])}">Edit</button>
+              </td>
+            </tr>`;
+        }).join('');
+      }
+
+      getFilteredData() {
+        const term = this.searchTerm.trim().toLowerCase();
+        if (!term) return this.allData;
+        return this.allData.filter(item => {
+          return this.schema.some(field => {
+            const value = String(item[field.name] ?? '').toLowerCase();
+            return value.includes(term);
+          });
+        });
+      }
+
+      updateStats(data) {
+        const total = data.length;
+        const active = data.filter(d => d.status === 'Aktif').length;
+        const inactive = data.filter(d => d.status === 'Nonaktif').length;
+        this.statTotal.textContent = total;
+        this.statActive.textContent = active;
+        this.statInactive.textContent = inactive;
+      }
+
+      async fillForm(data) {
+        this.isEditMode = true;
+        this.currentKey = data[this.keyField];
+        this.currentData = data;
+
+        this.schema.forEach(field => {
+          const input = document.getElementById(`field-${field.name}`);
+          if (!input) return;
+
+          if (field.type === 'password') {
+            input.value = '';
+            input.placeholder = 'Kosongkan jika tidak ingin mengubah sandi';
+          } else {
+            input.value = data[field.name] || '';
+          }
+
+          if (field.isKey) input.readOnly = true;
+        });
+
+        this.btnDelete.style.display = 'inline-flex';
+        this.formTitle.textContent = 'Edit Pengguna';
+        this.formSubtitle.textContent = `Sedang mengubah data: ${data[this.keyField]}`;
+        this.formMode.textContent = 'Mode: Edit';
+        this.highlightRow(this.currentKey);
+      }
+
+      resetForm() {
+        this.isEditMode = false;
+        this.currentKey = null;
+        this.currentData = null;
+        this.form.reset();
+
+        const keyInput = document.getElementById(`field-${this.keyField}`);
+        if (keyInput) keyInput.readOnly = false;
+
+        const passInput = document.getElementById('field-sandi');
+        if (passInput) passInput.placeholder = 'Masukkan kata sandi';
+
+        this.btnDelete.style.display = 'none';
+        this.formTitle.textContent = 'Tambah Pengguna';
+        this.formSubtitle.textContent = 'Isi data di bawah untuk menambahkan pengguna baru.';
+        this.formMode.textContent = 'Mode: Tambah';
+        this.clearHighlight();
+      }
+
+      highlightRow(id) {
+        document.querySelectorAll('#table-body tr').forEach(tr => tr.classList.remove('selected'));
+        const row = document.querySelector(`#table-body tr[data-id="${CSS.escape(id)}"]`);
+        if (row) row.classList.add('selected');
+      }
+
+      clearHighlight() {
+        document.querySelectorAll('#table-body tr').forEach(tr => tr.classList.remove('selected'));
+      }
+
+      initEvents() {
+        this.form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const formData = new FormData(this.form);
+          const dataObject = Object.fromEntries(formData.entries());
+
+          const keyValue = (dataObject[this.keyField] || '').trim();
+          if (!keyValue) {
+            this.toast('Gagal', 'ID pengguna wajib diisi.', 'error');
+            return;
+          }
+
+          if (this.isEditMode && this.currentData) {
+            const password = (dataObject.sandi || '').trim();
+            if (!password) {
+              dataObject.sandi = this.currentData.sandi || '';
+            }
+          }
+
+          try {
+            await this.db.save(dataObject);
+            this.toast('Berhasil', this.isEditMode ? 'Data pengguna diperbarui.' : 'Data pengguna tersimpan.', 'success');
+            this.resetForm();
+            await this.refreshTable();
+          } catch (err) {
+            this.toast('Error', 'Gagal menyimpan data: ' + err.message, 'error');
+          }
+        });
+
+        this.tableBody.addEventListener('click', async (e) => {
+          const btn = e.target.closest('[data-action="edit"]');
+          if (btn) {
+            const id = btn.dataset.id;
+            const selected = await this.db.getByKey(id);
+            if (selected) this.fillForm(selected);
+            return;
+          }
+
+          const targetRow = e.target.closest('tr');
+          if (!targetRow || !targetRow.dataset.id) return;
+          const selected = await this.db.getByKey(targetRow.dataset.id);
+          if (selected) this.fillForm(selected);
+        });
+
+        this.btnDelete.addEventListener('click', async () => {
+          if (!this.currentKey) return;
+          const ok = confirm(`Yakin ingin menghapus data ${this.currentKey}?`);
+          if (!ok) return;
+
+          try {
+            await this.db.delete(this.currentKey);
+            this.toast('Berhasil', 'Data pengguna dihapus.', 'success');
+            this.resetForm();
+            await this.refreshTable();
+          } catch (err) {
+            this.toast('Error', 'Gagal menghapus data: ' + err.message, 'error');
+          }
+        });
+
+        this.btnReset.addEventListener('click', () => this.resetForm());
+
+        this.btnClearSelection.addEventListener('click', () => {
+          this.resetForm();
+          this.searchInput.value = '';
+          this.searchTerm = '';
+          this.refreshTable();
+        });
+
+        this.searchInput.addEventListener('input', async (e) => {
+          this.searchTerm = e.target.value;
+          await this.refreshTable();
+        });
+      }
+
+      toast(title, message, type = 'info') {
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        el.innerHTML = `<strong>${this.escapeHtml(title)}</strong><div>${this.escapeHtml(message)}</div>`;
+        this.toastWrap.appendChild(el);
+        setTimeout(() => {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(8px)';
+          setTimeout(() => el.remove(), 180);
+        }, 2600);
+      }
+
+      escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const dbManager = new IndexedDBManager('AppDatabase', 'PenggunaStore');
+      const app = new AppController(SchemaConfig, dbManager);
+      app.start();
+    });
+  </script>
+</body>
+</html>
