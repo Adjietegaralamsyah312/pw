@@ -3,24 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sistem Manajemen Pengguna - Blue Horizon</title>
+  <title>Sistem Manajemen Pengguna - IndexedDB CRUD</title>
   <style>
     :root {
-      --bg: #eff6ff;
-      --bg-2: #f8fafc;
-      --surface: rgba(255, 255, 255, 0.82);
-      --surface-strong: rgba(255, 255, 255, 0.96);
-      --text: #0f172a;
-      --muted: #64748b;
-      --line: rgba(148, 163, 184, 0.28);
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --secondary: #0ea5e9;
-      --danger: #ef4444;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --shadow: 0 18px 50px rgba(37, 99, 235, 0.12);
-      --radius-xl: 26px;
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --surface: rgba(255, 255, 255, 0.08);
+      --surface-2: rgba(255, 255, 255, 0.12);
+      --card: rgba(15, 23, 42, 0.88);
+      --card-border: rgba(148, 163, 184, 0.18);
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --line: rgba(148, 163, 184, 0.18);
+      --primary: #60a5fa;
+      --primary-strong: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger: #f87171;
+      --danger-hover: #ef4444;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+      --radius-xl: 24px;
       --radius-lg: 18px;
       --radius-md: 14px;
       --radius-sm: 10px;
@@ -33,19 +36,22 @@
       font-family: Inter, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       color: var(--text);
       background:
-        radial-gradient(circle at top left, rgba(14, 165, 233, 0.18), transparent 26%),
-        radial-gradient(circle at top right, rgba(37, 99, 235, 0.18), transparent 28%),
-        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.30), transparent 35%),
+        radial-gradient(circle at top right, rgba(14, 165, 233, 0.20), transparent 28%),
+        linear-gradient(180deg, #0b1120 0%, #0f172a 55%, #111827 100%);
       padding: 28px;
     }
 
-    .app { max-width: 1280px; margin: 0 auto; }
+    .app {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
 
     .hero {
       display: flex;
       flex-wrap: wrap;
-      justify-content: space-between;
       align-items: end;
+      justify-content: space-between;
       gap: 16px;
       margin-bottom: 22px;
     }
@@ -61,7 +67,7 @@
       margin: 10px 0 0;
       color: var(--muted);
       max-width: 760px;
-      line-height: 1.65;
+      line-height: 1.6;
     }
 
     .pill {
@@ -70,9 +76,9 @@
       gap: 8px;
       padding: 10px 14px;
       border-radius: 999px;
-      background: rgba(37, 99, 235, 0.10);
-      border: 1px solid rgba(37, 99, 235, 0.14);
-      color: var(--primary-dark);
+      background: rgba(96, 165, 250, 0.14);
+      border: 1px solid rgba(96, 165, 250, 0.20);
+      color: #dbeafe;
       font-size: 0.95rem;
       white-space: nowrap;
     }
@@ -90,8 +96,8 @@
     }
 
     .card {
-      background: var(--surface);
-      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.92), rgba(15, 23, 42, 0.92));
+      border: 1px solid var(--card-border);
       box-shadow: var(--shadow);
       border-radius: var(--radius-xl);
       overflow: hidden;
@@ -105,7 +111,6 @@
       justify-content: space-between;
       align-items: center;
       gap: 10px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.35));
     }
 
     .card-title {
@@ -136,7 +141,7 @@
 
     .stat {
       padding: 14px;
-      background: var(--surface-strong);
+      background: var(--surface);
       border: 1px solid var(--line);
       border-radius: var(--radius-lg);
     }
@@ -160,10 +165,10 @@
       flex-wrap: wrap;
     }
 
-    .input, .select {
+    .input, .select, .textarea {
       width: 100%;
       padding: 12px 14px;
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(255, 255, 255, 0.05);
       color: var(--text);
       border: 1px solid var(--line);
       border-radius: var(--radius-md);
@@ -172,13 +177,16 @@
       font-size: 0.98rem;
     }
 
-    .input::placeholder { color: #94a3b8; }
-    .input:focus, .select:focus {
-      border-color: rgba(37, 99, 235, 0.65);
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+    .input::placeholder, .textarea::placeholder { color: #94a3b8; }
+    .input:focus, .select:focus, .textarea:focus {
+      border-color: rgba(96, 165, 250, 0.65);
+      box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.12);
     }
 
-    .search { flex: 1; min-width: 220px; }
+    .search {
+      flex: 1;
+      min-width: 220px;
+    }
 
     .btn-row {
       display: flex;
@@ -202,24 +210,28 @@
       min-height: 46px;
     }
 
-    .btn-primary { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); }
-    .btn-primary:hover { transform: translateY(-1px); }
+    .btn-primary { background: linear-gradient(135deg, var(--primary-strong), var(--primary)); }
+    .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.03); }
     .btn-danger { background: linear-gradient(135deg, #dc2626, var(--danger)); }
     .btn-danger:hover { transform: translateY(-1px); }
     .btn-secondary { background: rgba(148, 163, 184, 0.18); color: var(--text); border: 1px solid var(--line); }
-    .btn-secondary:hover { background: rgba(148, 163, 184, 0.26); }
-    .btn-ghost { background: transparent; color: var(--primary-dark); border: 1px solid rgba(37, 99, 235, 0.18); }
-    .btn-ghost:hover { background: rgba(37, 99, 235, 0.06); }
+    .btn-secondary:hover { background: rgba(148, 163, 184, 0.24); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(96, 165, 250, 0.35); }
     .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 
-    .form-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
 
     .form-group label {
       display: block;
       margin-bottom: 8px;
       font-size: 0.92rem;
-      color: #334155;
-      font-weight: 700;
+      color: #cbd5e1;
+      font-weight: 600;
     }
 
     .hint {
@@ -229,7 +241,9 @@
       line-height: 1.45;
     }
 
-    .input-wrap { position: relative; }
+    .input-wrap {
+      position: relative;
+    }
 
     .toggle-pass {
       position: absolute;
@@ -237,12 +251,11 @@
       top: 50%;
       transform: translateY(-50%);
       border: 0;
-      background: rgba(37, 99, 235, 0.08);
-      color: var(--primary-dark);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
       border-radius: 999px;
       padding: 8px 10px;
       cursor: pointer;
-      font-weight: 600;
     }
 
     .table-wrap {
@@ -260,8 +273,8 @@
       position: sticky;
       top: 0;
       z-index: 1;
-      background: rgba(255, 255, 255, 0.96);
-      color: #0f172a;
+      background: rgba(15, 23, 42, 0.98);
+      color: #dbeafe;
       text-align: left;
       padding: 14px 16px;
       border-bottom: 1px solid var(--line);
@@ -271,9 +284,8 @@
     tbody td {
       padding: 14px 16px;
       border-bottom: 1px solid var(--line);
-      color: #1e293b;
+      color: #e2e8f0;
       vertical-align: middle;
-      background: rgba(255, 255, 255, 0.55);
     }
 
     tbody tr {
@@ -282,8 +294,8 @@
       background: transparent;
     }
 
-    tbody tr:hover { transform: translateY(-1px); }
-    tbody tr.selected td { background: rgba(37, 99, 235, 0.10); }
+    tbody tr:hover { background: rgba(255, 255, 255, 0.04); }
+    tbody tr.selected { background: rgba(96, 165, 250, 0.12); }
 
     .badge {
       display: inline-flex;
@@ -296,15 +308,15 @@
     }
 
     .badge.active {
-      background: rgba(16, 185, 129, 0.12);
-      color: #047857;
-      border: 1px solid rgba(16, 185, 129, 0.18);
+      background: rgba(52, 211, 153, 0.14);
+      color: #6ee7b7;
+      border: 1px solid rgba(52, 211, 153, 0.20);
     }
 
     .badge.inactive {
-      background: rgba(245, 158, 11, 0.12);
-      color: #b45309;
-      border: 1px solid rgba(245, 158, 11, 0.18);
+      background: rgba(251, 191, 36, 0.14);
+      color: #fcd34d;
+      border: 1px solid rgba(251, 191, 36, 0.20);
     }
 
     .empty {
@@ -327,12 +339,11 @@
       max-width: min(92vw, 380px);
       padding: 14px 16px;
       border-radius: 16px;
-      background: rgba(255, 255, 255, 0.96);
+      background: rgba(15, 23, 42, 0.96);
       border: 1px solid var(--line);
       box-shadow: var(--shadow);
       backdrop-filter: blur(14px);
       animation: slideIn 0.2s ease;
-      color: var(--text);
     }
 
     .toast strong {
@@ -340,9 +351,9 @@
       margin-bottom: 4px;
     }
 
-    .toast.success { border-color: rgba(16, 185, 129, 0.28); }
-    .toast.error { border-color: rgba(239, 68, 68, 0.28); }
-    .toast.info { border-color: rgba(37, 99, 235, 0.28); }
+    .toast.success { border-color: rgba(52, 211, 153, 0.35); }
+    .toast.error { border-color: rgba(248, 113, 113, 0.35); }
+    .toast.info { border-color: rgba(96, 165, 250, 0.35); }
 
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -368,9 +379,9 @@
     <div class="hero">
       <div>
         <h1>Manajemen Database Pengguna</h1>
-        <p>Versi ini memakai tampilan yang lebih ringan, bersih, dan nyaman dilihat. Semua fungsi penting tetap sama: tambah data, ubah data, hapus data, dan pencarian cepat dengan <strong>IndexedDB</strong>.</p>
+        <p>CRUD modern berbasis <strong>IndexedDB</strong> dengan form dinamis, pencarian cepat, tampilan tabel yang lebih rapi, dan alur edit/hapus yang lebih nyaman.</p>
       </div>
-      <div class="pill">● Modern UI • Offline Storage • Dynamic Form</div>
+      <div class="pill">● Offline • Responsive • Dynamic Schema</div>
     </div>
 
     <div class="grid">
@@ -409,7 +420,7 @@
           </form>
 
           <div class="footer-note">
-            Catatan: saat mode edit, jika kata sandi dikosongkan maka nilai lama akan tetap dipakai.
+            Catatan: saat mode edit, jika kata sandi dikosongkan maka nilai lama akan dipertahankan.
           </div>
         </div>
       </section>
@@ -418,7 +429,7 @@
         <div class="card-header">
           <div>
             <h2 class="card-title">Daftar Pengguna</h2>
-            <p class="card-subtitle">Klik baris tabel atau tombol Edit untuk mengisi form otomatis.</p>
+            <p class="card-subtitle">Klik baris tabel untuk mengisi form secara otomatis.</p>
           </div>
         </div>
         <div class="card-body" style="padding-bottom: 0;">
@@ -807,7 +818,7 @@
           .replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;')
-          .replace(/\"/g, '&quot;')
+          .replace(/"/g, '&quot;')
           .replace(/'/g, '&#039;');
       }
     }
