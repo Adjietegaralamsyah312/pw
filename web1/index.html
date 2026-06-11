@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Login CRUD Management</title>
+
+<style>
+:root{
+    --primary:#2563eb;
+    --danger:#dc2626;
+    --success:#16a34a;
+    --gray:#64748b;
+    --bg:#f8fafc;
+    --white:#fff;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Segoe UI,sans-serif;
+    background:var(--bg);
+    padding:20px;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 3px 10px rgba(0,0,0,.1);
+}
+
+h1{
+    margin-bottom:15px;
+}
+
+.login-box{
+    max-width:400px;
+    margin:auto;
+}
+
+.form-group{
+    margin-bottom:15px;
+}
+
+label{
+    display:block;
+    margin-bottom:5px;
+    font-weight:600;
+}
+
+input,select{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+}
+
+button{
+    border:none;
+    cursor:pointer;
+    padding:10px 15px;
+    border-radius:8px;
+}
+
+.btn-primary{
+    background:var(--primary);
+    color:white;
+}
+
+.btn-danger{
+    background:var(--danger);
+    color:white;
+}
+
+.btn-success{
+    background:var(--success);
+    color:white;
+}
+
+.hidden{
+    display:none;
+}
+
+.toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.table-wrapper{
+    overflow:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,td{
+    padding:12px;
+    border-bottom:1px solid #ddd;
+    text-align:left;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.4);
+    display:none;
+    justify-content:center;
+    align-items:center;
+}
+
+.modal-content{
+    background:white;
+    width:100%;
+    max-width:500px;
+    border-radius:12px;
+    padding:20px;
+}
+
+.modal.show{
+    display:flex;
+}
+
+.actions{
+    display:flex;
+    gap:8px;
+}
+
+@media(max-width:768px){
+
+    table{
+        min-width:700px;
+    }
+
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- LOGIN -->
+    <section id="loginSection" class="card login-box">
+        <h1>Login</h1>
+
+        <div class="form-group">
+            <label>Username</label>
+            <input id="loginUsername">
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input id="loginPassword" type="password">
+        </div>
+
+        <button class="btn-primary" id="loginBtn">
+            Login
+        </button>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="hidden">
+
+        <div class="toolbar">
+            <h1>Kelola User</h1>
+
+            <div>
+                <button class="btn-success" id="addBtn">
+                    Tambah User
+                </button>
+
+                <button class="btn-danger" id="logoutBtn">
+                    Logout
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Aksi</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="userTable"></tbody>
+
+                </table>
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+
+    <div class="modal-content">
+
+        <h2 id="modalTitle">
+            Tambah User
+        </h2>
+
+        <br>
+
+        <input type="hidden" id="userId">
+
+        <div class="form-group">
+            <label>Username</label>
+            <input id="username">
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input id="email">
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input id="password">
+        </div>
+
+        <div class="form-group">
+            <label>Role</label>
+
+            <select id="role">
+                <option>Admin</option>
+                <option>User</option>
+            </select>
+        </div>
+
+        <button class="btn-success" id="saveBtn">
+            Simpan
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+const Service = {
+
+    STORAGE_KEY:'users',
+
+    async init(){
+
+        if(!localStorage.getItem(this.STORAGE_KEY)){
+
+            const response = await fetch('users.json');
+            const users = await response.json();
+
+            localStorage.setItem(
+                this.STORAGE_KEY,
+                JSON.stringify(users)
+            );
+        }
+    },
+
+    getUsers(){
+        return JSON.parse(
+            localStorage.getItem(this.STORAGE_KEY)
+        ) || [];
+    },
+
+    saveUsers(users){
+        localStorage.setItem(
+            this.STORAGE_KEY,
+            JSON.stringify(users)
+        );
+    },
+
+    create(user){
+
+        const users=this.getUsers();
+
+        user.id=
+        users.length
+        ? Math.max(...users.map(x=>x.id))+1
+        :1;
+
+        users.push(user);
+
+        this.saveUsers(users);
+    },
+
+    update(user){
+
+        const users=this.getUsers();
+
+        const index=
+        users.findIndex(
+            x=>x.id===user.id
+        );
+
+        users[index]=user;
+
+        this.saveUsers(users);
+    },
+
+    delete(id){
+
+        const users=
+        this.getUsers()
+        .filter(
+            x=>x.id!==id
+        );
+
+        this.saveUsers(users);
+    },
+
+    login(username,password){
+
+        return this
+        .getUsers()
+        .find(
+            user=>
+            user.username===username &&
+            user.password===password
+        );
+
+    }
+
+};
+
+const UI={
+
+    render(){
+
+        const users=
+        Service.getUsers();
+
+        userTable.innerHTML=
+        users.map(user=>`
+
+        <tr>
+            <td>${user.id}</td>
+            <td>${user.username}</td>
+            <td>${user.email}</td>
+            <td>${user.role}</td>
+
+            <td>
+                <div class="actions">
+
+                    <button
+                    onclick="editUser(${user.id})">
+                    Edit
+                    </button>
+
+                    <button
+                    class="btn-danger"
+                    onclick="deleteUser(${user.id})">
+                    Hapus
+                    </button>
+
+                </div>
+            </td>
+        </tr>
+
+        `).join('');
+    }
+
+};
+
+function openModal(title='Tambah User'){
+
+    modal.classList.add('show');
+
+    modalTitle.textContent=title;
+}
+
+function closeModal(){
+
+    modal.classList.remove('show');
+
+    userId.value='';
+    username.value='';
+    email.value='';
+    password.value='';
+    role.value='User';
+}
+
+function editUser(id){
+
+    const user=
+    Service.getUsers()
+    .find(x=>x.id===id);
+
+    userId.value=user.id;
+    username.value=user.username;
+    email.value=user.email;
+    password.value=user.password;
+    role.value=user.role;
+
+    openModal('Edit User');
+}
+
+function deleteUser(id){
+
+    if(confirm('Hapus user?')){
+
+        Service.delete(id);
+        UI.render();
+
+    }
+}
+
+saveBtn.onclick=()=>{
+
+    const user={
+
+        id:Number(userId.value),
+        username:username.value,
+        email:email.value,
+        password:password.value,
+        role:role.value
+
+    };
+
+    if(user.id){
+
+        Service.update(user);
+
+    }else{
+
+        Service.create(user);
+
+    }
+
+    UI.render();
+    closeModal();
+
+};
+
+addBtn.onclick=()=>openModal();
+
+loginBtn.onclick=()=>{
+
+    const user=
+    Service.login(
+        loginUsername.value,
+        loginPassword.value
+    );
+
+    if(!user){
+
+        alert('Login gagal');
+        return;
+    }
+
+    loginSection.classList.add('hidden');
+    dashboard.classList.remove('hidden');
+
+    UI.render();
+};
+
+logoutBtn.onclick=()=>{
+
+    dashboard.classList.add('hidden');
+    loginSection.classList.remove('hidden');
+
+};
+
+modal.onclick=(e)=>{
+
+    if(e.target===modal){
+
+        closeModal();
+
+    }
+
+};
+
+(async()=>{
+
+    await Service.init();
+
+})();
+</script>
+
+</body>
+</html>
