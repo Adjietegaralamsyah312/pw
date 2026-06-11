@@ -3,106 +3,141 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Login CRUD Management</title>
+<title>Classic Login CRUD</title>
 
 <style>
 :root{
-    --primary:#2563eb;
-    --primary-dark:#1d4ed8;
-    --danger:#dc2626;
-    --danger-dark:#b91c1c;
-    --success:#16a34a;
-    --success-dark:#15803d;
-    --gray:#64748b;
-    --border:#d1d5db;
-    --bg:#f8fafc;
-    --white:#fff;
-    --text:#0f172a;
-    --muted:#475569;
-    --shadow:0 10px 25px rgba(15, 23, 42, 0.08);
-    --radius:14px;
+    --bg:#f5f1e8;
+    --panel:#fffdf8;
+    --panel-2:#f7f3eb;
+    --text:#2f241d;
+    --muted:#6e5e52;
+    --border:#d8cbbb;
+    --primary:#7a4e2d;
+    --primary-dark:#5f3d23;
+    --success:#4f6f52;
+    --success-dark:#3e5841;
+    --danger:#a54b3b;
+    --danger-dark:#863b2f;
+    --shadow:0 14px 35px rgba(72, 52, 37, .12);
+    --radius:16px;
 }
 
 *{
+    box-sizing:border-box;
     margin:0;
     padding:0;
-    box-sizing:border-box;
+}
+
+html,body{
+    min-height:100%;
 }
 
 body{
-    font-family:Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    background:var(--bg);
+    font-family: Georgia, "Times New Roman", serif;
+    background:
+        radial-gradient(circle at top left, rgba(122,78,45,.10), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(79,111,82,.10), transparent 28%),
+        var(--bg);
     color:var(--text);
-    padding:20px;
-    line-height:1.5;
+    padding:24px;
+    line-height:1.55;
 }
 
 .container{
-    max-width:1100px;
-    margin:auto;
+    width:min(1120px, 100%);
+    margin:0 auto;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:16px;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+}
+
+.brand{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.brand h1{
+    font-size:2rem;
+    font-weight:700;
+    letter-spacing:.2px;
+}
+
+.brand p{
+    color:var(--muted);
+    font-size:.98rem;
 }
 
 .card{
-    background:var(--white);
-    padding:24px;
+    background:var(--panel);
+    border:1px solid rgba(216,203,187,.9);
     border-radius:var(--radius);
     box-shadow:var(--shadow);
 }
 
-h1{
-    font-size:1.8rem;
+.login-card{
+    max-width:440px;
+    margin:64px auto 0;
+    padding:28px;
+}
+
+.section-title{
+    font-size:1.4rem;
     margin-bottom:8px;
 }
 
-h2{
-    font-size:1.35rem;
-}
-
-.subtitle{
+.section-subtitle{
     color:var(--muted);
     font-size:.95rem;
-}
-
-.login-box{
-    max-width:420px;
-    margin:72px auto 0;
+    margin-bottom:18px;
 }
 
 .form-group{
-    margin-bottom:14px;
+    margin-bottom:15px;
 }
 
 label{
     display:block;
-    margin-bottom:6px;
-    font-weight:600;
+    margin-bottom:7px;
     font-size:.95rem;
+    font-weight:700;
+    color:#4a3a31;
 }
 
 input,select{
     width:100%;
-    padding:11px 12px;
+    padding:12px 14px;
     border:1px solid var(--border);
-    border-radius:10px;
-    outline:none;
-    font-size:1rem;
+    border-radius:12px;
     background:#fff;
-    transition:border-color .2s, box-shadow .2s;
+    color:var(--text);
+    font-family:inherit;
+    font-size:1rem;
+    outline:none;
+    transition:border-color .2s, box-shadow .2s, transform .05s;
 }
 
 input:focus,select:focus{
     border-color:var(--primary);
-    box-shadow:0 0 0 3px rgba(37, 99, 235, .12);
+    box-shadow:0 0 0 4px rgba(122, 78, 45, .12);
 }
 
 button{
     border:none;
-    cursor:pointer;
+    border-radius:12px;
     padding:11px 16px;
-    border-radius:10px;
-    font-weight:600;
+    font-weight:700;
     font-size:.95rem;
-    transition:transform .06s ease, background .2s ease, opacity .2s ease;
+    cursor:pointer;
+    transition:background .2s, transform .05s, opacity .2s;
+    font-family:inherit;
 }
 
 button:active{
@@ -110,57 +145,83 @@ button:active{
 }
 
 button:disabled{
-    opacity:.6;
+    opacity:.65;
     cursor:not-allowed;
 }
 
 .btn-primary{
     background:var(--primary);
-    color:white;
+    color:#fff;
 }
 
 .btn-primary:hover{
     background:var(--primary-dark);
 }
 
-.btn-danger{
-    background:var(--danger);
-    color:white;
-}
-
-.btn-danger:hover{
-    background:var(--danger-dark);
-}
-
 .btn-success{
     background:var(--success);
-    color:white;
+    color:#fff;
 }
 
 .btn-success:hover{
     background:var(--success-dark);
 }
 
-.btn-light{
-    background:#e2e8f0;
-    color:#0f172a;
+.btn-danger{
+    background:var(--danger);
+    color:#fff;
 }
 
-.btn-light:hover{
-    background:#cbd5e1;
+.btn-danger:hover{
+    background:var(--danger-dark);
+}
+
+.btn-neutral{
+    background:#e7dfd2;
+    color:#3a2d24;
+}
+
+.btn-neutral:hover{
+    background:#d9cebe;
 }
 
 .hidden{
     display:none !important;
 }
 
+.notice{
+    margin-top:14px;
+    padding:12px 14px;
+    border-radius:12px;
+    background:#f8f2e8;
+    border:1px solid #e4d6c2;
+    color:#6a4b33;
+    font-size:.93rem;
+}
+
+.notice.error{
+    background:#fff1f1;
+    border-color:#f0c5c5;
+    color:#9a3c31;
+}
+
 .toolbar{
     display:flex;
     justify-content:space-between;
-    align-items:center;
-    gap:12px;
-    margin-bottom:18px;
+    align-items:flex-end;
+    gap:14px;
     flex-wrap:wrap;
+    margin-bottom:18px;
+}
+
+.toolbar-left h2{
+    font-size:1.55rem;
+    margin-bottom:4px;
+}
+
+.toolbar-left p{
+    color:var(--muted);
+    font-size:.95rem;
 }
 
 .toolbar-actions{
@@ -170,7 +231,6 @@ button:disabled{
 }
 
 .table-card{
-    padding:0;
     overflow:hidden;
 }
 
@@ -181,26 +241,30 @@ button:disabled{
 table{
     width:100%;
     border-collapse:collapse;
-    min-width:760px;
+    min-width:820px;
+}
+
+thead th{
+    background:var(--panel-2);
+    color:#4b3b31;
+    font-size:.82rem;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    text-align:left;
 }
 
 th,td{
     padding:14px 16px;
-    border-bottom:1px solid #e5e7eb;
-    text-align:left;
+    border-bottom:1px solid #e7ddcf;
     vertical-align:middle;
 }
 
-th{
-    background:#f8fafc;
-    color:#334155;
-    font-size:.82rem;
-    text-transform:uppercase;
-    letter-spacing:.04em;
+tbody tr:hover td{
+    background:#fbf8f2;
 }
 
-tr:hover td{
-    background:#fafafa;
+td small{
+    color:var(--muted);
 }
 
 .actions{
@@ -212,7 +276,7 @@ tr:hover td{
 .badge{
     display:inline-flex;
     align-items:center;
-    padding:5px 10px;
+    padding:5px 11px;
     border-radius:999px;
     font-size:.78rem;
     font-weight:700;
@@ -220,53 +284,31 @@ tr:hover td{
 }
 
 .badge-admin{
-    background:#fef2f2;
-    color:#991b1b;
-    border-color:#fee2e2;
+    background:#f6e8df;
+    color:#7a4e2d;
+    border-color:#e6c8b2;
 }
 
 .badge-user{
-    background:#ecfdf5;
-    color:#166534;
-    border-color:#d1fae5;
+    background:#e8f0e9;
+    color:#49604d;
+    border-color:#cfe0d1;
 }
 
 .badge-unknown{
-    background:#f1f5f9;
-    color:#334155;
-    border-color:#e2e8f0;
-}
-
-.helper{
-    margin-top:8px;
-    color:var(--muted);
-    font-size:.9rem;
-}
-
-.notice{
-    margin-top:14px;
-    padding:12px 14px;
-    border-radius:12px;
-    background:#eff6ff;
-    color:#1e3a8a;
-    border:1px solid #dbeafe;
-    font-size:.92rem;
-}
-
-.error{
-    background:#fef2f2;
-    color:#991b1b;
-    border-color:#fee2e2;
+    background:#f0ece6;
+    color:#6b5b4c;
+    border-color:#ddd3c6;
 }
 
 .modal{
     position:fixed;
     inset:0;
-    background:rgba(15, 23, 42, .5);
+    background:rgba(51, 38, 29, .52);
     display:none;
-    justify-content:center;
     align-items:center;
-    padding:16px;
+    justify-content:center;
+    padding:18px;
     z-index:1000;
 }
 
@@ -275,36 +317,47 @@ tr:hover td{
 }
 
 .modal-content{
-    background:white;
     width:100%;
-    max-width:520px;
-    border-radius:16px;
-    padding:22px;
-    box-shadow:0 30px 60px rgba(0,0,0,.2);
+    max-width:540px;
+    background:var(--panel);
+    border-radius:18px;
+    border:1px solid rgba(216,203,187,.95);
+    box-shadow:0 22px 50px rgba(48, 33, 24, .2);
+    overflow:hidden;
 }
 
 .modal-header{
     display:flex;
-    justify-content:space-between;
     align-items:center;
+    justify-content:space-between;
     gap:12px;
-    margin-bottom:16px;
+    padding:18px 20px;
+    background:linear-gradient(180deg, #fbf7f1, #f4ede3);
+    border-bottom:1px solid #e5d8c8;
+}
+
+.modal-header h3{
+    font-size:1.25rem;
 }
 
 .icon-btn{
-    background:#e2e8f0;
-    color:#0f172a;
     width:40px;
     height:40px;
-    border-radius:10px;
+    border-radius:12px;
+    background:#eadfce;
+    color:#3b2c23;
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    font-size:1.2rem;
+    font-size:1.15rem;
 }
 
 .icon-btn:hover{
-    background:#cbd5e1;
+    background:#ddcfbc;
+}
+
+.modal-body{
+    padding:20px;
 }
 
 .modal-actions{
@@ -315,25 +368,37 @@ tr:hover td{
     flex-wrap:wrap;
 }
 
+.muted-inline{
+    color:var(--muted);
+    font-size:.9rem;
+    margin-top:8px;
+}
+
+.code-like{
+    font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size:.88rem;
+    background:#f4efe7;
+    padding:2px 6px;
+    border-radius:8px;
+    border:1px solid #e2d8c8;
+}
+
 @media (max-width:768px){
     body{
-        padding:14px;
+        padding:16px;
     }
 
-    .card{
-        padding:18px;
+    .brand h1{
+        font-size:1.65rem;
     }
 
-    h1{
-        font-size:1.5rem;
-    }
-
-    table{
-        min-width:700px;
-    }
-
-    .login-box{
+    .login-card{
         margin-top:28px;
+        padding:22px;
+    }
+
+    .modal-body{
+        padding:16px;
     }
 }
 </style>
@@ -341,14 +406,20 @@ tr:hover td{
 <body>
 
 <div class="container">
+    <header class="topbar">
+        <div class="brand">
+            <h1>Classic User Management</h1>
+            <p>Login sederhana dan CRUD user dengan tampilan klasik yang elegan.</p>
+        </div>
+    </header>
 
     <!-- LOGIN -->
-    <section id="loginSection" class="card login-box">
-        <h1>Login</h1>
-        <p class="subtitle">Masuk untuk mengelola data user.</p>
+    <section id="loginSection" class="card login-card">
+        <h2 class="section-title">Login</h2>
+        <p class="section-subtitle">Masuk menggunakan data dari <span class="code-like">users.json</span>.</p>
 
         <form id="loginForm" autocomplete="off">
-            <div class="form-group" style="margin-top:18px;">
+            <div class="form-group">
                 <label for="loginUsername">Username</label>
                 <input id="loginUsername" type="text" placeholder="Masukkan username" required />
             </div>
@@ -358,26 +429,25 @@ tr:hover td{
                 <input id="loginPassword" type="password" placeholder="Masukkan password" required />
             </div>
 
-            <button class="btn-primary" type="submit" style="width:100%;">
-                Login
-            </button>
+            <button type="submit" class="btn-primary" style="width:100%;">Login</button>
         </form>
 
         <div id="loginNotice" class="notice" style="display:none;"></div>
+        <p class="muted-inline">Data login awal: <span class="code-like">admin / admin123</span> atau <span class="code-like">johndoe / john123</span></p>
     </section>
 
     <!-- DASHBOARD -->
     <section id="dashboard" class="hidden">
         <div class="toolbar">
-            <div>
-                <h1>Kelola User</h1>
-                <p class="subtitle">CRUD sederhana dengan data awal dari <code>users.json</code>.</p>
+            <div class="toolbar-left">
+                <h2>Kelola User</h2>
+                <p>Tambah, edit, dan hapus data user secara lokal.</p>
             </div>
 
             <div class="toolbar-actions">
-                <button class="btn-success" id="addBtn">+ Tambah User</button>
-                <button class="btn-light" id="refreshBtn">Refresh</button>
-                <button class="btn-danger" id="logoutBtn">Logout</button>
+                <button id="addBtn" class="btn-success">+ Tambah User</button>
+                <button id="refreshBtn" class="btn-neutral">Refresh</button>
+                <button id="logoutBtn" class="btn-danger">Logout</button>
             </div>
         </div>
 
@@ -405,46 +475,48 @@ tr:hover td{
 <div class="modal" id="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 id="modalTitle">Tambah User</h2>
-            <button type="button" class="icon-btn" id="closeModalBtn" aria-label="Tutup modal">×</button>
+            <h3 id="modalTitle">Tambah User</h3>
+            <button type="button" class="icon-btn" id="closeModalBtn" aria-label="Tutup">×</button>
         </div>
 
-        <form id="userForm" autocomplete="off">
-            <input type="hidden" id="userId" />
+        <div class="modal-body">
+            <form id="userForm" autocomplete="off">
+                <input type="hidden" id="userId" />
 
-            <div class="form-group">
-                <label for="formNama">Nama</label>
-                <input id="formNama" type="text" placeholder="Nama lengkap" required />
-            </div>
+                <div class="form-group">
+                    <label for="formNama">Nama</label>
+                    <input id="formNama" type="text" placeholder="Nama lengkap" required />
+                </div>
 
-            <div class="form-group">
-                <label for="formUsername">Username</label>
-                <input id="formUsername" type="text" placeholder="Username login" required />
-            </div>
+                <div class="form-group">
+                    <label for="formUsername">Username</label>
+                    <input id="formUsername" type="text" placeholder="Username login" required />
+                </div>
 
-            <div class="form-group">
-                <label for="formEmail">Email</label>
-                <input id="formEmail" type="email" placeholder="email@domain.com" required />
-            </div>
+                <div class="form-group">
+                    <label for="formEmail">Email</label>
+                    <input id="formEmail" type="email" placeholder="email@domain.com" required />
+                </div>
 
-            <div class="form-group">
-                <label for="formPassword">Password</label>
-                <input id="formPassword" type="password" placeholder="Password login" required />
-            </div>
+                <div class="form-group">
+                    <label for="formPassword">Password</label>
+                    <input id="formPassword" type="password" placeholder="Password login" required />
+                </div>
 
-            <div class="form-group">
-                <label for="formRole">Role</label>
-                <select id="formRole" required>
-                    <option value="Admin">Admin</option>
-                    <option value="User">User</option>
-                </select>
-            </div>
+                <div class="form-group">
+                    <label for="formRole">Role</label>
+                    <select id="formRole" required>
+                        <option value="Admin">Admin</option>
+                        <option value="User">User</option>
+                    </select>
+                </div>
 
-            <div class="modal-actions">
-                <button type="button" class="btn-light" id="cancelBtn">Batal</button>
-                <button type="submit" class="btn-primary">Simpan</button>
-            </div>
-        </form>
+                <div class="modal-actions">
+                    <button type="button" id="cancelBtn" class="btn-neutral">Batal</button>
+                    <button type="submit" class="btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -471,24 +543,22 @@ const DEFAULT_USERS = [
 const $ = (id) => document.getElementById(id);
 
 const Service = {
-    STORAGE_KEY: "users_db",
+    STORAGE_KEY: "classic_users_db",
     SEED_URL: "./users.json",
 
     async init() {
         if (!localStorage.getItem(this.STORAGE_KEY)) {
             try {
                 const response = await fetch(this.SEED_URL, { cache: "no-store" });
-
                 if (!response.ok) {
                     throw new Error(`Gagal fetch ${this.SEED_URL} (${response.status})`);
                 }
-
                 const users = await response.json();
                 this.saveUsers(users);
             } catch (error) {
                 console.error("Init data gagal:", error);
                 this.saveUsers(DEFAULT_USERS);
-                UI.showLoginNotice("users.json tidak ditemukan, memakai data bawaan sementara.");
+                UI.showLoginNotice("users.json tidak ditemukan, memakai data bawaan sementara.", false);
             }
         }
     },
@@ -552,7 +622,7 @@ const UI = {
         if (!users.length) {
             this.userTable.innerHTML = `
                 <tr>
-                    <td colspan="6" style="text-align:center; color:#64748b; padding:20px;">
+                    <td colspan="6" style="text-align:center; color:#6e5e52; padding:22px;">
                         Belum ada data user.
                     </td>
                 </tr>
@@ -568,14 +638,14 @@ const UI = {
 
             return `
                 <tr>
-                    <td>${user.id}</td>
+                    <td>${escapeHtml(user.id)}</td>
                     <td>${escapeHtml(user.nama || "-")}</td>
                     <td>${escapeHtml(user.username || "-")}</td>
                     <td>${escapeHtml(user.email || "-")}</td>
                     <td><span class="badge ${roleClass}">${escapeHtml(user.role || "-")}</span></td>
                     <td>
                         <div class="actions">
-                            <button type="button" class="btn-light" data-action="edit" data-id="${user.id}">Edit</button>
+                            <button type="button" class="btn-neutral" data-action="edit" data-id="${user.id}">Edit</button>
                             <button type="button" class="btn-danger" data-action="delete" data-id="${user.id}">Hapus</button>
                         </div>
                     </td>
@@ -770,7 +840,6 @@ async function initApp() {
         }
     });
 
-    // Auto-login kalau ada session
     const currentUser = sessionStorage.getItem("currentUser");
     if (currentUser) {
         UI.showDashboard();
