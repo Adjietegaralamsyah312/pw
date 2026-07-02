@@ -1194,10 +1194,3 @@
     </script>
 </body>
 </html>
-
-        function updateExamProgress() {
-            const total = activeExam.questions.length;
-            const answered = Object.keys(userAnswers).length;
-            document.getElementById('exam-progress-text').textContent = `${answered}/${total} terjawab`;
-            document.getElementById('exam-progress-bar').style.width = `${(answered / total) * 100}%`;
-      }
